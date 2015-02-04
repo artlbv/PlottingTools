@@ -23,11 +23,13 @@ def trimName(fname):
 
 def checkType(fname):
 
-    fname = trimName(fname)
+#    fname = trimName(fname)
 
     # exclude sample pattern from plotting
-    if 'X' in fname:     return 'nan'
+    if 'TTH' in fname:     return 'nan'
+    # define signals
     elif "T1" in fname:  return 'sig'
+    # define bkg
     elif "" in fname:    return 'bkg'
 
 def doLegend(nameDict = {}, sigList = [], bkgList = []):
@@ -109,9 +111,10 @@ def getVar(hname):
 def custHists(histDict):
 
     for name, hist in histDict.items():
-        #        print 'Hist file name', name
+#        print 'Hist file name', name
         hist.SetStats(0)
         hist.SetTitle("")
+#        hist.SetName(hist.GetName()+name)
 
         # rebin histo
         hname = hist.GetName()
@@ -123,17 +126,19 @@ def custHists(histDict):
             if cutnumb > 5:
                 hist.Rebin(4)
 
-        name = trimName(name)
-
-        if "TT"  in name:     paintHist(hist, 1,1,1, kAzure-4)
-        elif "Top"  in name:  paintHist(hist, 1,1,1, kAzure-3)
-        elif "WJets" in name: paintHist(hist, 1,1,1, kViolet+5)
+        if "TTbar"  in name:  paintHist(hist, 1,1,1, kBlue-2)
+        elif "Top"  in name:  paintHist(hist, 1,1,1, kViolet+5)
+        elif "TTV"  in name:  paintHist(hist, 1,1,1, kOrange-3)
+        elif "TTW"  in name:  paintHist(hist, 1,1,1, kOrange-3)
+        elif "TTH"  in name:  paintHist(hist, 1,1,1, kOrange-3)
+        elif "TTZ"  in name:  paintHist(hist, 1,1,1, kOrange-3)
+        elif "WJets" in name: paintHist(hist, 1,1,1, kGreen-2)
         elif "QCD"  in name:   paintHist(hist, 1,1,1, kCyan-6)
-        elif "DY"  in name:   paintHist(hist, 1,1,1, kYellow)
-        elif "800" in name:   paintHist(hist, 2,2,1,0)
-        elif "1200" in name:  paintHist(hist, kBlack, 2,1,0)
-        elif "1300" in name:  paintHist(hist, 4,2,1,0)
-        elif "1500" in name:  paintHist(hist, kMagenta, 2,1,0)
+        elif "DY"  in name:   paintHist(hist, 1,1,1, kRed-6)
+        elif "800" in name:   paintHist(hist, 2,2,2,0)
+        elif "1200" in name:  paintHist(hist, kBlack, 2,2,0)
+        elif "1300" in name:  paintHist(hist, 4,2,2,0)
+        elif "1500" in name:  paintHist(hist, kMagenta, 2,2,0)
         else:  paintHist(hist, 1,2,1,0)
 
         # workaround for Electron/Muon separation
@@ -149,6 +154,7 @@ def custHists(histDict):
             hist.SetLineWidth(3)
             hist.SetLineColor(col-1)
 
+        # scale if necessary
 #        if checkType(name) == 'sig':
 #            hist.Scale(10)
 
@@ -173,6 +179,7 @@ def custCanv(canv):
 
     # axis title
     xunit = hist.GetName()
+    if 'CutFlow' in xunit: ymax *= 2
 
     # filter out TH1s
     histList = filter(lambda x: 'TH1' in str(type(x)), histList)
@@ -222,8 +229,8 @@ def doPlot(histDict):
         if htype == 'bkg': bkgList += [hist]
         if htype == 'sig': sigList += [hist]
 
-        # save inverted hjist dict: d[hist] = name
-        nameDict[hist] = trimName(name)
+        # save inverted hist dict: d[hist] = name
+        nameDict[hist] = name
 
         if 'canv' not in locals():
             canv=TCanvas(hist.GetName(),hist.GetTitle(),800,600)
@@ -312,7 +319,6 @@ def getHist(file,name,dir=''):
 
 def copyStruct(infile,outfile):
     indirlist = infile.GetListOfKeys()
-#    outdirlist = outfile.GetListOfKeys()
 
     for cutKey in indirlist:
 
@@ -320,8 +326,8 @@ def copyStruct(infile,outfile):
             histDir = cutKey.ReadObj()
 
             # create same folder
-            #if(outfile)
-            outfile.mkdir(histDir.GetName())
+            if(outfile):
+                outfile.mkdir(histDir.GetName())
 
 def copyHist(fileList,outfile,histname,dirname=''):
 
@@ -334,6 +340,8 @@ def copyHist(fileList,outfile,histname,dirname=''):
     for tfile in fileList:
         hist = findHisto(tfile,histname)
         fname = tfile.GetName()
+        fname = trimName(fname)
+
         if hist and checkType(fname) != 'nan':
             histDict[fname] = findHisto(tfile,histname)
 
@@ -401,6 +409,11 @@ if __name__ == "__main__":
 
     # first argument is '-b' == for batch mode
     #    print sys.argv
+
+    if len(sys.argv) <= 2:
+        print 'Usage:'
+        print './PlotStack.py FileDir [Pattern]'
+        print 'Example: ./PlotStack.py submit CMG_MC'
 
     if len(sys.argv) > 2:
         fileDir = sys.argv[1]
