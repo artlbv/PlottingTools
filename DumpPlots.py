@@ -18,6 +18,11 @@ def walkDumpCanvs(plotfile,outdir='./',ext='.png'):
     # set to 0 for normal, 1 for test
     switch = 0
 
+    # create output dir if it doesn't exist
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+    outdir+='/'
+
     for refKey in plotdirlist:
         #if a folder
         if refKey.IsFolder() == 1:
