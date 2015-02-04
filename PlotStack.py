@@ -87,8 +87,8 @@ def lookUpVar(var):
         var = 'p_{T} (%s jet)' %num
 
     if 'nLep' in var: var = 'N_{lep}'
-    if 'nLeppT' in var: var = 'p_{T} (lep)'
-    if 'nLepEta' in var: var = '#eta (lep)'
+    if 'LeppT' in var: var = 'p_{T} (lep)'
+    if 'LepEta' in var: var = '#eta (lep)'
 
     if 'dPhiWLep' in var: var = '#Delta#phi(W,lep)'
     if 'dPhiMetLep' in var: var = '#Delta#phi(Met,lep)'
